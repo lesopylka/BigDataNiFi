@@ -1,0 +1,4 @@
+FROM apache/nifi:1.28.1
+USER root
+RUN mkdir -p /opt/nifi/drivers && curl -fsSL https://jdbc.postgresql.org/download/postgresql-42.7.4.jar -o /opt/nifi/drivers/postgresql.jar
+USER nifi
