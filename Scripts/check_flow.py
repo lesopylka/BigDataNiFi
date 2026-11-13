@@ -31,7 +31,7 @@ def main():
         print(f"Kafka offsets: {[(row[3], row[4], row[5]) for row in rows]}; queued: {status['queuedCount']}", flush=True)
         if not rows:
             print(result.stdout + result.stderr, flush=True)
-        if delivered and end_offset == args.expected_input and status["queuedCount"] == 0:
+        if delivered and end_offset == args.expected_input and int(str(status["queuedCount"]).replace(",", "")) == 0:
             print(f"Kafka offset {end_offset}, NiFi queues are empty")
             return
         time.sleep(5)
