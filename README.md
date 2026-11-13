@@ -99,7 +99,7 @@ docker compose --profile dashboards run --rm dashboards
 
 ```bash
 docker compose exec -T postgres psql -U postgres -v ON_ERROR_STOP=1 < sql/02_views.sql
-docker compose run --rm producer python Scripts/verify.py
+docker compose run --build --rm producer python Scripts/verify.py
 ```
 
 Временные агрегации группируются только по `month_key` или `year_key`. Метка `all` находится в результате и не входит в `GROUP BY`. Проверка [Scripts/check_reports.py](Scripts/check_reports.py) независимо пересчитывает топы, средние и временные показатели по CSV.
