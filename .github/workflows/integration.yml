@@ -1,0 +1,56 @@
+name: Integration
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      MB_EMAIL: integration@example.com
+      MB_PASSWORD: IntegrationOnly12345!
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate Compose
+        run: docker compose config --quiet
+      - name: Build and start services
+        run: docker compose up -d --build
+      - name: Wait for NiFi setup
+        run: timeout 1200 docker compose wait setup
+      - name: Send initial data
+        run: docker compose --profile send run --rm --no-deps -e SEND_DELAY=0 producer
+      - name: Validate initial data and reports
+        run: docker compose --profile send run --rm --no-deps producer python Scripts/verify.py
+      - name: Wait for NiFi queues
+        run: python Scripts/check_flow.py
+      - name: Send the same data again
+        run: docker compose --profile send run --rm --no-deps -e SEND_DELAY=0 producer
+      - name: Wait for NiFi queues after duplicate delivery
+        run: python Scripts/check_flow.py --expected-input=20000
+      - name: Validate idempotency
+        run: docker compose --profile send run --rm --no-deps producer python Scripts/verify.py
+      - name: Create Metabase dashboard
+        run: docker compose --profile dashboards run --rm --no-deps dashboards
+      - name: Validate every Metabase card
+        run: docker compose --profile dashboards run --rm --no-deps dashboards python Scripts/check_metabase.py
+      - name: Save service logs
+        if: always()
+        run: |
+          docker compose ps -a > integration.log
+          docker compose logs --no-color >> integration.log 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-logs
+          path: integration.log
+      - name: Stop services
+        if: always()
+        run: docker compose down -v
