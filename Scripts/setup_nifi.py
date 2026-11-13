@@ -17,7 +17,8 @@ def api(method, path, payload=None):
 def configure(kind, entity, settings):
     # Имена свойств берем из API установленной версии NiFi.
     item = api("GET", f"/{kind}/{entity['id']}")
-    descriptors = item["component"]["descriptors"]
+    component = item["component"]
+    descriptors = component["config"]["descriptors"] if kind == "processors" else component["descriptors"]
     properties = {}
     for label, value in settings.items():
         matches = [key for key, description in descriptors.items()
