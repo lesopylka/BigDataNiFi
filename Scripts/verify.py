@@ -4,6 +4,7 @@ from decimal import Decimal
 from pathlib import Path
 import psycopg
 import requests
+from check_reports import check_reports
 
 
 def main():
@@ -17,6 +18,11 @@ def main():
         assert row == (expected["sales_count"], expected["unique_sales"], expected["total_quantity"], Decimal(expected["total_amount"])), row
         for name in ["products", "customers", "time", "stores", "suppliers", "quality"]:
             assert conn.execute(f"SELECT COUNT(*) FROM public.report_{name}").fetchone()[0] > 0
+        reports = {}
+        for name in ["stores", "suppliers", "time"]:
+            result = conn.execute(f"SELECT metric, entity, period, value FROM public.report_{name}").fetchall()
+            reports[name] = [dict(zip(["metric", "entity", "period", "value"], row)) for row in result]
+        check_reports(reports)
     print("Количество продаж, ключи, количество товара и сумма совпадают с исходными данными")
 
 

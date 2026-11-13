@@ -33,27 +33,27 @@ UNION ALL
 SELECT 'rating_quantity_correlation' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' entity, '' period, CORR(rating, quantity) value FROM (SELECT p.product_name, AVG(CAST(p.product_rating AS DOUBLE PRECISION)) rating, q.quantity FROM products p JOIN (SELECT product_name, SUM(quantity_num) quantity FROM sales GROUP BY product_name) q ON p.product_name = q.product_name GROUP BY p.product_name, q.quantity) grouped) result;
 
 CREATE OR REPLACE VIEW public.report_stores AS
-SELECT 'top_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT store_email AS entity, '' AS period, SUM(amount_num) AS value FROM sales  GROUP BY store_email ORDER BY value DESC, entity LIMIT 5) result
+SELECT 'top_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT store_name AS entity, '' AS period, SUM(amount_num) AS value FROM sales  GROUP BY store_name ORDER BY value DESC, entity LIMIT 5) result
 UNION ALL
 SELECT 'city_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT CONCAT(store_country, ' / ', store_city) AS entity, '' AS period, SUM(amount_num) AS value FROM sales  GROUP BY CONCAT(store_country, ' / ', store_city)) result
 UNION ALL
 SELECT 'country_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT store_country AS entity, '' AS period, SUM(amount_num) AS value FROM sales  GROUP BY store_country) result
 UNION ALL
-SELECT 'average_order' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT store_email AS entity, '' AS period, AVG(amount_num) AS value FROM sales  GROUP BY store_email) result;
+SELECT 'average_order' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT store_name AS entity, '' AS period, AVG(amount_num) AS value FROM sales  GROUP BY store_name) result;
 
 CREATE OR REPLACE VIEW public.report_suppliers AS
-SELECT 'top_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT supplier_email AS entity, '' AS period, SUM(amount_num) AS value FROM sales  GROUP BY supplier_email ORDER BY value DESC, entity LIMIT 5) result
+SELECT 'top_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT supplier_name AS entity, '' AS period, SUM(amount_num) AS value FROM sales  GROUP BY supplier_name ORDER BY value DESC, entity LIMIT 5) result
 UNION ALL
-SELECT 'average_price' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT supplier_email AS entity, '' AS period, AVG(CAST(product_price AS DOUBLE PRECISION)) AS value FROM sales  GROUP BY supplier_email) result
+SELECT 'average_price' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT supplier_name AS entity, '' AS period, AVG(CAST(product_price AS DOUBLE PRECISION)) AS value FROM sales  GROUP BY supplier_name) result
 UNION ALL
 SELECT 'country_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT supplier_country AS entity, '' AS period, SUM(amount_num) AS value FROM sales  GROUP BY supplier_country) result;
 
 CREATE OR REPLACE VIEW public.report_time AS
-SELECT 'month_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' AS entity, month_key AS period, SUM(amount_num) AS value FROM sales  GROUP BY 'all', month_key) result
+SELECT 'month_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' AS entity, month_key AS period, SUM(amount_num) AS value FROM sales  GROUP BY month_key) result
 UNION ALL
-SELECT 'year_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' AS entity, year_key AS period, SUM(amount_num) AS value FROM sales  GROUP BY 'all', year_key) result
+SELECT 'year_revenue' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' AS entity, year_key AS period, SUM(amount_num) AS value FROM sales  GROUP BY year_key) result
 UNION ALL
-SELECT 'month_average_order' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' AS entity, month_key AS period, AVG(amount_num) AS value FROM sales  GROUP BY 'all', month_key) result
+SELECT 'month_average_order' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' AS entity, month_key AS period, AVG(amount_num) AS value FROM sales  GROUP BY month_key) result
 UNION ALL
 SELECT 'month_revenue_change' AS metric, entity, period, CAST(value AS DOUBLE PRECISION) AS value FROM (SELECT 'all' entity, month_key period, revenue - LAG(revenue) OVER (ORDER BY month_key) value FROM (SELECT month_key, SUM(amount_num) revenue FROM sales GROUP BY month_key) months) result
 UNION ALL
